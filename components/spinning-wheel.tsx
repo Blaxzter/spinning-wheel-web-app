@@ -1,6 +1,8 @@
 "use client"
 
 import React, { useEffect, useState, useRef } from "react"
+// @ts-ignore
+import ReactConfetti from "react-confetti"
 import { Wheel } from "@/components/wheel"
 import { SimpleEditor } from "@/components/simple-editor"
 import { AdvancedEditor } from "@/components/advanced-editor"
@@ -8,7 +10,7 @@ import { MenuBar } from "@/components/menu-bar"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { WheelOption, WheelData } from "@/lib/types"
-import { generateRandomColor, type ColorPalette } from "@/lib/utils"
+import { generateRandomColor, generateDistinctColors, type ColorPalette } from "@/lib/utils"
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -24,10 +26,10 @@ import {
 export function SpinningWheel() {
   const [wheelName, setWheelName] = useState<string>("My Wheel")
   const [options, setOptions] = useState<WheelOption[]>([
-    { id: "1", text: "Option 1", color: "#FF5733", enabled: true, weight: 1, image: null, imageMode: "center", colorSetByUser: false },
-    { id: "2", text: "Option 2", color: "#33FF57", enabled: true, weight: 1, image: null, imageMode: "center", colorSetByUser: false },
-    { id: "3", text: "Option 3", color: "#3357FF", enabled: true, weight: 1, image: null, imageMode: "center", colorSetByUser: false },
-    { id: "4", text: "Option 4", color: "#F3FF33", enabled: true, weight: 1, image: null, imageMode: "center", colorSetByUser: false },
+    { id: "1", text: "Option 1", color: "#FF5733", enabled: true, weight: 1, image: null, imageMode: "center", hideTextWithImage: false, colorSetByUser: false },
+    { id: "2", text: "Option 2", color: "#33FF57", enabled: true, weight: 1, image: null, imageMode: "center", hideTextWithImage: false, colorSetByUser: false },
+    { id: "3", text: "Option 3", color: "#3357FF", enabled: true, weight: 1, image: null, imageMode: "center", hideTextWithImage: false, colorSetByUser: false },
+    { id: "4", text: "Option 4", color: "#F3FF33", enabled: true, weight: 1, image: null, imageMode: "center", hideTextWithImage: false, colorSetByUser: false },
   ])
   const [isSpinning, setIsSpinning] = useState<boolean>(false)
   const [selectedOption, setSelectedOption] = useState<WheelOption | null>(null)
@@ -43,7 +45,7 @@ export function SpinningWheel() {
     }
     return 'default';
   });
-  const { saveToLocalStorage, loadFromLocalStorage, getAllSavedWheels, errorDialogOpen, setErrorDialogOpen, errorMessage } = useWheelStorage()
+  const { saveToLocalStorage, loadFromLocalStorage, getAllSavedWheels, deleteWheel, renameWheel, errorDialogOpen, setErrorDialogOpen, errorMessage } = useWheelStorage()
   const [targetRotation, setTargetRotation] = useState<number | null>(null)
   const [currentRotation, setCurrentRotation] = useState<number>(0)
   const pendingSelectedOptionRef = useRef<WheelOption | null>(null)
@@ -52,6 +54,10 @@ export function SpinningWheel() {
   const [saveSuccessDialogOpen, setSaveSuccessDialogOpen] = useState(false)
   const [savedWheelName, setSavedWheelName] = useState("")
   const [noOptionsDialogOpen, setNoOptionsDialogOpen] = useState(false)
+  const [isWheelLoaded, setIsWheelLoaded] = useState(false)
+  const [overwriteDialogOpen, setOverwriteDialogOpen] = useState(false)
+  const [originalWheelName, setOriginalWheelName] = useState("")
+  const [showConfetti, setShowConfetti] = useState<boolean>(false)
 
   // Handle spinning the wheel
   const spinWheel = () => {
@@ -136,6 +142,11 @@ export function SpinningWheel() {
     setSelectedOption(actualSelectedOption)
     pendingSelectedOptionRef.current = null
 
+    // Show confetti when selection is complete
+    setShowConfetti(true)
+    // Hide confetti after 5 seconds
+    setTimeout(() => setShowConfetti(false), 5000)
+
     // Update current rotation to match target rotation after spin completes
     if (targetRotation !== null) {
       // Keep only the remainder after full rotations for better performance
@@ -158,10 +169,11 @@ export function SpinningWheel() {
       weight: 1,
       image: null,
       imageMode: "center",
+      hideTextWithImage: false,
       colorSetByUser: false,
     }
 
-    setOptions([...options, newOption])
+    setOptions([...options, newOption]);
   }
 
   // Update an option
@@ -193,10 +205,11 @@ export function SpinningWheel() {
       weight: 1,
       image: null,
       imageMode: "center" as const,
+      hideTextWithImage: false,
       colorSetByUser: false,
     }))
 
-    setOptions([...options, ...newOptions])
+    setOptions([...options, ...newOptions]);
   }
 
   // Sort options
@@ -248,12 +261,58 @@ export function SpinningWheel() {
       lastModified: new Date().toISOString(),
       colorPalette,
     }
+    
+    // Check if we're saving a loaded wheel with the same name
+    if (isWheelLoaded && wheelName === originalWheelName) {
+      // Direct overwrite without confirmation
+      const saveResult = saveToLocalStorage(wheelData, true)
+      if (saveResult) {
+        setSavedWheelName(saveResult)
+        setSaveSuccessDialogOpen(true)
+        // Since we're overwriting, update the wheel's loaded state data
+        setOriginalWheelName(saveResult)
+      }
+    } else {
+      // Check if a wheel with this name already exists
+      const existingWheels = getAllSavedWheels()
+      const existingWheel = existingWheels.find(wheel => wheel.name === wheelName)
+      
+      if (existingWheel) {
+        // Show confirmation dialog for overwrite
+        setOverwriteDialogOpen(true)
+      } else {
+        // No conflict, save normally
+        const saveResult = saveToLocalStorage(wheelData)
+        if (saveResult) {
+          setSavedWheelName(saveResult)
+          setSaveSuccessDialogOpen(true)
+          // Update the loaded state for the current wheel
+          setIsWheelLoaded(true)
+          setOriginalWheelName(saveResult)
+        }
+      }
+    }
+  }
 
-    const saveResult = saveToLocalStorage(wheelData)
+  // Handle confirming overwrite
+  const confirmOverwrite = () => {
+    const wheelData: WheelData = {
+      name: wheelName,
+      options,
+      lastModified: new Date().toISOString(),
+      colorPalette,
+    }
+    
+    const saveResult = saveToLocalStorage(wheelData, true)
     if (saveResult) {
       setSavedWheelName(saveResult)
       setSaveSuccessDialogOpen(true)
+      // Update the loaded state for the current wheel
+      setIsWheelLoaded(true)
+      setOriginalWheelName(saveResult)
     }
+    
+    setOverwriteDialogOpen(false)
   }
 
   // Load a wheel
@@ -263,6 +322,8 @@ export function SpinningWheel() {
     if (wheelData.colorPalette) {
       setColorPalette(wheelData.colorPalette)
     }
+    setIsWheelLoaded(true)
+    setOriginalWheelName(wheelData.name)
   }
 
   // Effect to sort options when sort mode changes
@@ -274,18 +335,33 @@ export function SpinningWheel() {
 
   // Regenerate colors for options without user-set colors
   const regenerateColors = () => {
-    setOptions(currentOptions => 
-      currentOptions.map(option => {
-        // Only regenerate color if it wasn't manually set by user
-        if (!option.colorSetByUser) {
-          return {
-            ...option,
-            color: generateRandomColor(colorPalette)
-          };
-        }
-        return option;
-      })
-    );
+    // Check if any colors have been manually set
+    const hasUserSetColors = options.some(option => option.colorSetByUser);
+    
+    if (!hasUserSetColors) {
+      // If no colors have been manually set, use generateDistinctColors for all options
+      const distinctColors = generateDistinctColors(options.length, colorPalette);
+      
+      setOptions(currentOptions => 
+        currentOptions.map((option, index) => ({
+          ...option,
+          color: distinctColors[index]
+        }))
+      );
+    } else {
+      // If some colors have been manually set, only regenerate the ones that weren't
+      setOptions(currentOptions => 
+        currentOptions.map(option => {
+          if (!option.colorSetByUser) {
+            return {
+              ...option,
+              color: generateRandomColor(colorPalette)
+            };
+          }
+          return option;
+        })
+      );
+    }
   }
 
   // Update colorPalette in localStorage when it changes
@@ -298,59 +374,99 @@ export function SpinningWheel() {
     }
   }, [colorPalette]);
 
+  // Add effect to recalculate colors when options change
+  useEffect(() => {
+    // Check if any colors have been manually set
+    const hasUserSetColors = options.some(option => option.colorSetByUser);
+    
+    // Only recalculate colors if none have been manually set
+    if (!hasUserSetColors) {
+      const distinctColors = generateDistinctColors(options.length, colorPalette);
+      
+      setOptions(currentOptions => 
+        currentOptions.map((option, index) => ({
+          ...option,
+          color: distinctColors[index]
+        }))
+      );
+    }
+  }, [options.length]);
+
   const handleNewWheel = () => {
     setIsNewWheelDialogOpen(true)
   }
 
   const confirmNewWheel = () => {
     setWheelName("My Wheel")
+    
+    // Generate distinct colors for the initial options
+    const distinctColors = generateDistinctColors(4, colorPalette);
+    
     setOptions([
       {
         id: "1",
         text: "Option 1",
-        color: generateRandomColor(colorPalette),
+        color: distinctColors[0],
         enabled: true,
         weight: 1,
         image: null,
         imageMode: "center",
+        hideTextWithImage: false,
         colorSetByUser: false,
       },
       {
         id: "2",
         text: "Option 2",
-        color: generateRandomColor(colorPalette),
+        color: distinctColors[1],
         enabled: true,
         weight: 1,
         image: null,
         imageMode: "center",
+        hideTextWithImage: false,
         colorSetByUser: false,
       },
       {
         id: "3",
         text: "Option 3",
-        color: generateRandomColor(colorPalette),
+        color: distinctColors[2],
         enabled: true,
         weight: 1,
         image: null,
         imageMode: "center",
+        hideTextWithImage: false,
         colorSetByUser: false,
       },
       {
         id: "4",
         text: "Option 4",
-        color: generateRandomColor(colorPalette),
+        color: distinctColors[3],
         enabled: true,
         weight: 1,
         image: null,
         imageMode: "center",
+        hideTextWithImage: false,
         colorSetByUser: false,
       },
     ])
+    setIsWheelLoaded(false)
+    setOriginalWheelName("")
     setIsNewWheelDialogOpen(false)
   }
 
   return (
     <div className="w-full h-screen flex flex-col overflow-hidden">
+      {showConfetti && (
+        <ReactConfetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          recycle={false}
+          numberOfPieces={200}
+          gravity={0.2}
+          initialVelocityY={20}
+          initialVelocityX={8}
+        />
+      )}
+      
       <header className="border-b">
         <MenuBar
           wheelName={wheelName}
@@ -358,10 +474,22 @@ export function SpinningWheel() {
           saveWheel={saveWheel}
           loadWheel={loadWheel}
           getAllSavedWheels={getAllSavedWheels}
+          deleteWheel={deleteWheel}
+          renameWheel={(oldName, newName) => {
+            const success = renameWheel(oldName, newName);
+            // Update the original wheel name if we're currently viewing the renamed wheel
+            if (success && isWheelLoaded && originalWheelName === oldName) {
+              setOriginalWheelName(newName);
+            }
+            return success;
+          }}
           handleNewWheel={handleNewWheel}
           colorPalette={colorPalette}
           setColorPalette={setColorPalette}
           regenerateColors={regenerateColors}
+          isWheelLoaded={isWheelLoaded}
+          originalWheelName={originalWheelName}
+          options={options}
         />
       </header>
 
@@ -380,8 +508,20 @@ export function SpinningWheel() {
           />
 
           {selectedOption && (
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-sm p-6 rounded-lg shadow-lg border z-20 text-center">
+            <div 
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-sm p-6 rounded-lg shadow-lg z-20 text-center"
+              style={{ border: `3px solid ${selectedOption.color}` }}
+            >
               <h2 className="text-2xl font-bold text-white">Selected:</h2>
+              {selectedOption.image && (
+                <div className="my-3 flex justify-center">
+                  <img 
+                    src={selectedOption.image} 
+                    alt={selectedOption.text}
+                    className="max-h-[120px] max-w-full rounded"
+                  />
+                </div>
+              )}
               <p className="text-3xl mt-2 text-white font-bold">
                 {selectedOption.text}
               </p>
@@ -423,14 +563,14 @@ export function SpinningWheel() {
             size="lg"
             className="mt-8"
             onClick={spinWheel}
-            disabled={isSpinning || options.filter((opt) => opt.enabled).length === 0}
+            disabled={isSpinning || options.filter((opt) => opt.enabled).length <= 2}
           >
             {isSpinning ? "Spinning..." : "Spin the Wheel"}
           </Button>
         </main>
 
         <div className="flex">
-          <div className="flex h-full items-center justify-center">
+          <div className="hidden md:flex h-full items-center justify-center">
           <Button
             variant="ghost"
             size="icon"
@@ -442,7 +582,7 @@ export function SpinningWheel() {
           </div>
           <div
             className={`${
-              isPanelOpen ? "w-96" : "w-0"
+              isPanelOpen ? "max-w-[450px]" : "w-0"
             } transition-all duration-300 border-l overflow-hidden`}
           >
             <div className="p-4 h-full overflow-auto">
@@ -480,6 +620,16 @@ export function SpinningWheel() {
           </div>
         </div>
       </div>
+
+      {/* Mobile options toggle button */}
+      <Button
+        variant="outline"
+        size="sm"
+        className="md:hidden fixed bottom-4 right-4 z-50 shadow-md"
+        onClick={() => setIsPanelOpen(!isPanelOpen)}
+      >
+        {isPanelOpen ? "Hide Options" : "Show Options"}
+      </Button>
 
       <AlertDialog open={isNewWheelDialogOpen} onOpenChange={setIsNewWheelDialogOpen}>
         <AlertDialogContent>
@@ -539,6 +689,23 @@ export function SpinningWheel() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={overwriteDialogOpen} onOpenChange={setOverwriteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Overwrite</AlertDialogTitle>
+            <AlertDialogDescription>
+              A wheel named "{wheelName}" already exists. Do you want to overwrite it?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmOverwrite}>
+              Overwrite
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -553,22 +720,32 @@ function useWheelStorage() {
     setErrorDialogOpen(true)
   }
 
-  const saveToLocalStorage = (wheelData: WheelData) => {
+  const saveToLocalStorage = (wheelData: WheelData, overwrite: boolean = false) => {
     try {
       const savedWheels = localStorage.getItem("savedWheels")
       const wheels: Record<string, WheelData> = savedWheels ? JSON.parse(savedWheels) : {}
 
-      // Use name as key, but ensure it's unique
+      // Use name as key
       let key = wheelData.name
-      let counter = 1
-      while (wheels[key] && counter < 100) {
-        key = `${wheelData.name} (${counter})`
-        counter++
+      
+      if (overwrite) {
+        // Direct overwrite
+        wheels[key] = wheelData
+        localStorage.setItem("savedWheels", JSON.stringify(wheels))
+        return key
+      } else {
+        // Check for duplicates and generate unique name if needed
+        let counter = 1
+        let originalKey = key
+        while (wheels[key] && counter < 100) {
+          key = `${originalKey} (${counter})`
+          counter++
+        }
+        
+        wheels[key] = wheelData
+        localStorage.setItem("savedWheels", JSON.stringify(wheels))
+        return key
       }
-
-      wheels[key] = wheelData
-      localStorage.setItem("savedWheels", JSON.stringify(wheels))
-      return key
     } catch (error) {
       console.error("Error saving wheel:", error)
       showError("Failed to save wheel to local storage.")
@@ -605,10 +782,63 @@ function useWheelStorage() {
     }
   }
 
+  const deleteWheel = (name: string): boolean => {
+    try {
+      const savedWheels = localStorage.getItem("savedWheels")
+      if (!savedWheels) return false
+
+      const wheels: Record<string, WheelData> = JSON.parse(savedWheels)
+      
+      if (!wheels[name]) return false
+      
+      delete wheels[name]
+      localStorage.setItem("savedWheels", JSON.stringify(wheels))
+      return true
+    } catch (error) {
+      console.error("Error deleting wheel:", error)
+      showError("Failed to delete wheel from local storage.")
+      return false
+    }
+  }
+
+  const renameWheel = (oldName: string, newName: string): boolean => {
+    try {
+      const savedWheels = localStorage.getItem("savedWheels")
+      if (!savedWheels) return false
+
+      const wheels: Record<string, WheelData> = JSON.parse(savedWheels)
+      
+      if (!wheels[oldName]) return false
+      
+      // If a wheel with the new name already exists, don't overwrite it
+      if (wheels[newName]) {
+        showError(`A wheel named "${newName}" already exists. Please choose a different name.`)
+        return false
+      }
+      
+      // Store the wheel with the new name
+      const wheelData = wheels[oldName]
+      wheelData.name = newName // Update the name inside the data as well
+      
+      wheels[newName] = wheelData
+      delete wheels[oldName]
+      
+      localStorage.setItem("savedWheels", JSON.stringify(wheels))
+      
+      return true
+    } catch (error) {
+      console.error("Error renaming wheel:", error)
+      showError("Failed to rename wheel in local storage.")
+      return false
+    }
+  }
+
   return { 
     saveToLocalStorage, 
     loadFromLocalStorage, 
     getAllSavedWheels,
+    deleteWheel,
+    renameWheel,
     errorDialogOpen,
     setErrorDialogOpen,
     errorMessage 

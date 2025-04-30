@@ -235,20 +235,32 @@ export function Wheel({
 
             // Calculate the middle angle of this segment
             const middleAngle = currentAngle + sliceAngle / 2
-
-            // Apply rotation transformation to make the image rotate with the wheel
-            ctx.translate(centerX, centerY)
-            ctx.rotate(middleAngle)
-
-            // Calculate position and size for the image
-            // Adjust these values to better center the image in the segment
-            const imgSize = radius * 1.8
-
-            // Draw the image centered on the segment
-            // Offset from center to position it better within the segment
+            
+            // Get the position where text would be rendered (for alignment)
+            const textX = centerX + Math.cos(middleAngle) * (radius * 0.7)
+            const textY = centerY + Math.sin(middleAngle) * (radius * 0.7)
+            
+            // Apply transformation at the text position
+            ctx.translate(textX, textY)
+            ctx.rotate(middleAngle + Math.PI/2)
+            
+            // Use a more appropriate size for the image
+            const imgSize = radius * 1.5
+            
+            // Draw the image centered on the text position
             ctx.drawImage(cachedImg, -imgSize / 2, -imgSize / 2, imgSize, imgSize)
 
             // Restore the context
+            ctx.restore()
+            
+            // Add a semi-transparent overlay to improve text readability
+            ctx.save()
+            ctx.beginPath()
+            ctx.moveTo(centerX, centerY)
+            ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle)
+            ctx.closePath()
+            ctx.fillStyle = "rgba(0, 0, 0, 0.3)"
+            ctx.fill()
             ctx.restore()
 
             // Redraw the segment border
@@ -266,12 +278,22 @@ export function Wheel({
 
             // Calculate position for centered image
             const imgSize = radius * 0.4
-            const distanceFromCenter = radius * 0.5
+            const distanceFromCenter = radius * 0.7
+            // Position image at same radius as text for better alignment
             const imgX = centerX + Math.cos(currentAngle + sliceAngle / 2) * distanceFromCenter - imgSize / 2
             const imgY = centerY + Math.sin(currentAngle + sliceAngle / 2) * distanceFromCenter - imgSize / 2
 
+            // Create a clipping path for this segment to prevent overlap
             ctx.save()
+            ctx.beginPath()
+            ctx.moveTo(centerX, centerY)
+            ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle)
+            ctx.closePath()
+            ctx.clip()
+            
+            // Draw the image within the clipped area
             ctx.translate(imgX + imgSize / 2, imgY + imgSize / 2)
+            // Adjust rotation to keep image upright relative to text
             ctx.rotate(currentAngle + sliceAngle / 2 + Math.PI / 2)
             ctx.drawImage(cachedImg, -imgSize / 2, -imgSize / 2, imgSize, imgSize)
             ctx.restore()
@@ -296,14 +318,14 @@ export function Wheel({
       ctx.translate(centerX, centerY)
       ctx.rotate(currentAngle + sliceAngle / 2)
 
-      ctx.textAlign = "right"
+      ctx.textAlign = "center"
       ctx.textBaseline = "middle"
       ctx.fillStyle = "#ffffff"
       ctx.font = `bold ${radius * 0.07}px sans-serif`
 
       // Draw text along arc
       const text = option.text
-      const textRadius = radius * 0.8
+      const textRadius = radius * 0.7
 
       // Add text shadow for better visibility over images
       ctx.shadowColor = "rgba(0, 0, 0, 0.7)"
@@ -311,8 +333,11 @@ export function Wheel({
       ctx.shadowOffsetX = 1
       ctx.shadowOffsetY = 1
 
-      // Draw text along arc
-      ctx.fillText(text, textRadius, 0)
+      // Only draw text if we're not hiding it when an image is present
+      if (!(option.image && option.hideTextWithImage)) {
+        // Draw text along arc
+        ctx.fillText(text, textRadius, 0)
+      }
 
       // Reset shadow
       ctx.shadowColor = "transparent"

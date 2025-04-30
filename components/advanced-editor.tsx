@@ -310,23 +310,39 @@ export function AdvancedEditor({
                               />
 
                               <div className="mt-2">
-                                <Label>Image Mode</Label>
-                                <RadioGroup
-                                  value={option.imageMode}
-                                  onValueChange={(value: "center" | "fill") =>
-                                    updateOption(option.id, { imageMode: value })
-                                  }
-                                  className="flex gap-4 mt-1"
+                                <Label className="mb-1 block">Image Mode</Label>
+                                <div className="flex gap-2">
+                                  <Button
+                                    type="button"
+                                    variant={option.imageMode === "center" ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => updateOption(option.id, { imageMode: "center" })}
+                                    className="flex-1"
+                                  >
+                                    Center
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant={option.imageMode === "fill" ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => updateOption(option.id, { imageMode: "fill" })}
+                                    className="flex-1"
+                                  >
+                                    Fill
+                                  </Button>
+                                </div>
+                              </div>
+                              
+                              <div className="mt-2">
+                                <Button
+                                  type="button"
+                                  variant={option.hideTextWithImage ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => updateOption(option.id, { hideTextWithImage: !option.hideTextWithImage })}
+                                  className="w-full"
                                 >
-                                  <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="center" id={`center-${option.id}`} />
-                                    <Label htmlFor={`center-${option.id}`}>Center</Label>
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="fill" id={`fill-${option.id}`} />
-                                    <Label htmlFor={`fill-${option.id}`}>Fill</Label>
-                                  </div>
-                                </RadioGroup>
+                                  {option.hideTextWithImage ? "Text Hidden" : "Show Text With Image"}
+                                </Button>
                               </div>
                             </div>
                           )}

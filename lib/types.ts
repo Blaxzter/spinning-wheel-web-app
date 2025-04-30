@@ -8,6 +8,7 @@ export interface WheelOption {
   weight: number
   image: string | null
   imageMode: "center" | "fill"
+  hideTextWithImage: boolean
   colorSetByUser?: boolean
 }
 

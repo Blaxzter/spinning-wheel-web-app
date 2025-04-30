@@ -74,7 +74,13 @@ export function SimpleEditor({ options, handleBulkCreate, updateOption, deleteOp
                     className="h-8 flex-1"
                   />
 
-                  <div className="w-3 h-8 rounded-sm" style={{ backgroundColor: option.color }} title="Option color" />
+                  {option.image ? (
+                    <div className="w-8 h-8 rounded-sm overflow-hidden flex-shrink-0" title="Option image">
+                      <img src={option.image} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 rounded-sm flex-shrink-0" style={{ backgroundColor: option.color }} title="Option color" />
+                  )}
 
                   <Button
                     variant="ghost"

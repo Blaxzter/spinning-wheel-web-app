@@ -37,6 +37,62 @@ export function generateRandomColor(palette: ColorPalette = "default"): string {
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`
 }
 
+/**
+ * Generates an array of distinct colors evenly spaced around the HSL color wheel
+ * @param count Number of distinct colors to generate
+ * @param palette Color palette to use for saturation and lightness values
+ * @returns Array of HSL color strings
+ */
+export function generateDistinctColors(count: number, palette: ColorPalette = "default"): string[] {
+  const colors: string[] = []
+  
+  // Start with a random initial hue
+  const startHue = Math.floor(Math.random() * 360)
+  const step = 360 / count
+  
+  // Generate evenly distributed colors around the HSL color wheel
+  for (let i = 0; i < count; i++) {
+    // Calculate hue by adding the step for each position and wrapping around the wheel
+    const hue = Math.floor((startHue + (i * step)) % 360)
+
+    let saturation: number
+    let lightness: number
+    
+    // Use the same saturation and lightness ranges as generateRandomColor
+    switch (palette) {
+      case "pastel":
+        saturation = 55 + Math.floor(Math.random() * 15) // 55-70%
+        lightness = 70 + Math.floor(Math.random() * 10)  // 70-80%
+        break
+      case "vibrant":
+        saturation = 80 + Math.floor(Math.random() * 20) // 80-100%
+        lightness = 50 + Math.floor(Math.random() * 10)  // 50-60%
+        break
+      case "muted":
+        saturation = 30 + Math.floor(Math.random() * 20) // 30-50%
+        lightness = 40 + Math.floor(Math.random() * 20)  // 40-60%
+        break
+      case "dark":
+        saturation = 60 + Math.floor(Math.random() * 30) // 60-90%
+        lightness = 15 + Math.floor(Math.random() * 20)  // 15-35%
+        break
+      default:
+        saturation = 70 + Math.floor(Math.random() * 30) // 70-100%
+        lightness = 45 + Math.floor(Math.random() * 10)  // 45-55%
+    }
+    
+    // Add a small random variance to make colors more natural while keeping them distinct
+    // Smaller variance than before to maintain better spacing
+    const hueVariance = Math.floor(Math.random() * 6) - 3 // -3 to +3 degrees
+    const finalHue = (hue + hueVariance + 360) % 360 // Ensure it stays in 0-360 range
+    
+    // Format using the same HSL string format as generateRandomColor
+    colors.push(`hsl(${finalHue}, ${saturation}%, ${lightness}%)`)
+  }
+  
+  return colors
+}
+
 export async function calculateAverageColor(imageUrl: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image()
