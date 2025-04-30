@@ -1,18 +1,27 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
-import { Wheel } from "./wheel"
-import { SimpleEditor } from "./simple-editor"
-import { AdvancedEditor } from "./advanced-editor"
-import { MenuBar } from "./menu-bar"
+import React, { useEffect, useState, useRef } from "react"
+import { Wheel } from "@/components/wheel"
+import { SimpleEditor } from "@/components/simple-editor"
+import { AdvancedEditor } from "@/components/advanced-editor"
+import { MenuBar } from "@/components/menu-bar"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { WheelOption, WheelData } from "@/lib/types"
 import { generateRandomColor, type ColorPalette } from "@/lib/utils"
-import { useToast } from "@/hooks/use-toast"
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export function SpinningWheel() {
-  const { toast } = useToast()
   const [wheelName, setWheelName] = useState<string>("My Wheel")
   const [options, setOptions] = useState<WheelOption[]>([
     { id: "1", text: "Option 1", color: "#FF5733", enabled: true, weight: 1, image: null, imageMode: "center", colorSetByUser: false },
@@ -34,11 +43,15 @@ export function SpinningWheel() {
     }
     return 'default';
   });
-  const { saveToLocalStorage, loadFromLocalStorage, getAllSavedWheels } = useWheelStorage()
+  const { saveToLocalStorage, loadFromLocalStorage, getAllSavedWheels, errorDialogOpen, setErrorDialogOpen, errorMessage } = useWheelStorage()
   const [targetRotation, setTargetRotation] = useState<number | null>(null)
   const [currentRotation, setCurrentRotation] = useState<number>(0)
   const pendingSelectedOptionRef = useRef<WheelOption | null>(null)
   const getOptionAtPointerRef = useRef<(() => WheelOption | null)>(() => null)
+  const [isNewWheelDialogOpen, setIsNewWheelDialogOpen] = useState(false)
+  const [saveSuccessDialogOpen, setSaveSuccessDialogOpen] = useState(false)
+  const [savedWheelName, setSavedWheelName] = useState("")
+  const [noOptionsDialogOpen, setNoOptionsDialogOpen] = useState(false)
 
   // Handle spinning the wheel
   const spinWheel = () => {
@@ -51,10 +64,7 @@ export function SpinningWheel() {
     const enabledOptions = options.filter((opt) => opt.enabled)
     if (enabledOptions.length === 0) {
       setIsSpinning(false)
-      toast({
-        title: "Alert",
-        description: "No enabled options to spin!",
-      })
+      setNoOptionsDialogOpen(true)
       return
     }
 
@@ -241,10 +251,8 @@ export function SpinningWheel() {
 
     const saveResult = saveToLocalStorage(wheelData)
     if (saveResult) {
-      toast({
-        title: "Saved",
-        description: `Wheel saved as "${saveResult}"`,
-      })
+      setSavedWheelName(saveResult)
+      setSaveSuccessDialogOpen(true)
     }
   }
 
@@ -291,63 +299,54 @@ export function SpinningWheel() {
   }, [colorPalette]);
 
   const handleNewWheel = () => {
-    toast({
-      title: "New Wheel",
-      description: "Create a new wheel? Unsaved changes will be lost.",
-      action: (
-        <Button
-          onClick={() => {
-            setWheelName("My Wheel")
-            setOptions([
-              {
-                id: "1",
-                text: "Option 1",
-                color: generateRandomColor(colorPalette),
-                enabled: true,
-                weight: 1,
-                image: null,
-                imageMode: "center",
-                colorSetByUser: false,
-              },
-              {
-                id: "2",
-                text: "Option 2",
-                color: generateRandomColor(colorPalette),
-                enabled: true,
-                weight: 1,
-                image: null,
-                imageMode: "center",
-                colorSetByUser: false,
-              },
-              {
-                id: "3",
-                text: "Option 3",
-                color: generateRandomColor(colorPalette),
-                enabled: true,
-                weight: 1,
-                image: null,
-                imageMode: "center",
-                colorSetByUser: false,
-              },
-              {
-                id: "4",
-                text: "Option 4",
-                color: generateRandomColor(colorPalette),
-                enabled: true,
-                weight: 1,
-                image: null,
-                imageMode: "center",
-                colorSetByUser: false,
-              },
-            ])
-          }}
-          variant="outline"
-          size="sm"
-        >
-          Confirm
-        </Button>
-      ),
-    })
+    setIsNewWheelDialogOpen(true)
+  }
+
+  const confirmNewWheel = () => {
+    setWheelName("My Wheel")
+    setOptions([
+      {
+        id: "1",
+        text: "Option 1",
+        color: generateRandomColor(colorPalette),
+        enabled: true,
+        weight: 1,
+        image: null,
+        imageMode: "center",
+        colorSetByUser: false,
+      },
+      {
+        id: "2",
+        text: "Option 2",
+        color: generateRandomColor(colorPalette),
+        enabled: true,
+        weight: 1,
+        image: null,
+        imageMode: "center",
+        colorSetByUser: false,
+      },
+      {
+        id: "3",
+        text: "Option 3",
+        color: generateRandomColor(colorPalette),
+        enabled: true,
+        weight: 1,
+        image: null,
+        imageMode: "center",
+        colorSetByUser: false,
+      },
+      {
+        id: "4",
+        text: "Option 4",
+        color: generateRandomColor(colorPalette),
+        enabled: true,
+        weight: 1,
+        image: null,
+        imageMode: "center",
+        colorSetByUser: false,
+      },
+    ])
+    setIsNewWheelDialogOpen(false)
   }
 
   return (
@@ -481,13 +480,78 @@ export function SpinningWheel() {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={isNewWheelDialogOpen} onOpenChange={setIsNewWheelDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>New Wheel</AlertDialogTitle>
+            <AlertDialogDescription>
+              Create a new wheel? Unsaved changes will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmNewWheel}>
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      <AlertDialog open={saveSuccessDialogOpen} onOpenChange={setSaveSuccessDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Saved</AlertDialogTitle>
+            <AlertDialogDescription>
+              Wheel saved as "{savedWheelName}"
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={noOptionsDialogOpen} onOpenChange={setNoOptionsDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Alert</AlertDialogTitle>
+            <AlertDialogDescription>
+              No enabled options to spin!
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Error</AlertDialogTitle>
+            <AlertDialogDescription>
+              {errorMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
 
 // Custom hook for wheel storage
 function useWheelStorage() {
-  const { toast } = useToast()
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+
+  const showError = (message: string) => {
+    setErrorMessage(message)
+    setErrorDialogOpen(true)
+  }
 
   const saveToLocalStorage = (wheelData: WheelData) => {
     try {
@@ -507,10 +571,7 @@ function useWheelStorage() {
       return key
     } catch (error) {
       console.error("Error saving wheel:", error)
-      toast({
-        title: "Error",
-        description: "Failed to save wheel to local storage.",
-      })
+      showError("Failed to save wheel to local storage.")
       return null
     }
   }
@@ -524,10 +585,7 @@ function useWheelStorage() {
       return wheels[name] || null
     } catch (error) {
       console.error("Error loading wheel:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load wheel from local storage.",
-      })
+      showError("Failed to load wheel from local storage.")
       return null
     }
   }
@@ -542,13 +600,17 @@ function useWheelStorage() {
       return Object.entries(wheels).map(([name, data]) => ({ name, data }))
     } catch (error) {
       console.error("Error getting saved wheels:", error)
-      toast({
-        title: "Error",
-        description: "Failed to retrieve saved wheels from local storage.",
-      })
+      showError("Failed to retrieve saved wheels from local storage.")
       return []
     }
   }
 
-  return { saveToLocalStorage, loadFromLocalStorage, getAllSavedWheels }
+  return { 
+    saveToLocalStorage, 
+    loadFromLocalStorage, 
+    getAllSavedWheels,
+    errorDialogOpen,
+    setErrorDialogOpen,
+    errorMessage 
+  }
 }
