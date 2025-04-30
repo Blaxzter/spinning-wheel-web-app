@@ -2,20 +2,19 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
 import type { WheelOption } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Trash2, GripVertical, ImageIcon, RefreshCw, ArrowDownAZ, ArrowDownWideNarrow } from "lucide-react"
+import { Trash2, GripVertical, ImageIcon, RefreshCw, ArrowDownAZ, ArrowDownWideNarrow, ArrowUpAZ, ArrowUpWideNarrow } from "lucide-react"
 import { Slider } from "@/components/ui/slider"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { calculateAverageColor } from "@/lib/utils"
-
-// Replace the color selection with a dialog-based approach
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { ColorPicker } from "@/components/ui/color-picker"
 
 interface AdvancedEditorProps {
   options: WheelOption[]
@@ -67,11 +66,19 @@ export function AdvancedEditor({
   shuffleOptions,
 }: AdvancedEditorProps) {
   const [newOptionText, setNewOptionText] = useState("")
-
-  // Add this to the component state
   const [colorDialogOpen, setColorDialogOpen] = useState(false)
   const [editingOptionId, setEditingOptionId] = useState<string | null>(null)
   const [currentColor, setCurrentColor] = useState("#000000")
+
+  // Initialize color picker when dialog opens
+  useEffect(() => {
+    if (colorDialogOpen && editingOptionId) {
+      const option = options.find(opt => opt.id === editingOptionId)
+      if (option) {
+        setCurrentColor(option.color)
+      }
+    }
+  }, [colorDialogOpen, editingOptionId, options])
 
   const handleAddOption = () => {
     if (newOptionText.trim()) {
@@ -130,35 +137,44 @@ export function AdvancedEditor({
           variant="outline"
           size="sm"
           onClick={() => {
-            // Simplified sort cycling: name -> weight -> custom
-            if (sortMode === "custom") {
+            if (sortMode === "name") {
+              if (sortDirection === "asc") {
+                setSortDirection("desc")
+              } else {
+                setSortMode("weight")
+                setSortDirection("desc")
+              }
+            } else if (sortMode === "weight") {
+              if (sortDirection === "desc") {
+                setSortDirection("asc")
+              } else {
+                setSortMode("name")
+                setSortDirection("asc")
+              }
+            } else {
+              // If in custom mode, start with name ascending
               setSortMode("name")
               setSortDirection("asc")
-            } else if (sortMode === "name") {
-              setSortMode("weight")
-              setSortDirection("desc")
-            } else {
-              setSortMode("custom")
             }
           }}
           title="Change sort order"
         >
           {sortMode === "name" ? (
-            <>
+            sortDirection === "asc" ? (
               <ArrowDownAZ className="h-4 w-4 mr-1" />
-              Sort by Name
-            </>
+            ) : (
+              <ArrowUpAZ className="h-4 w-4 mr-1" />
+            )
           ) : sortMode === "weight" ? (
-            <>
+            sortDirection === "asc" ? (
               <ArrowDownWideNarrow className="h-4 w-4 mr-1" />
-              Sort by Weight
-            </>
+            ) : (
+              <ArrowUpWideNarrow className="h-4 w-4 mr-1" />
+            )
           ) : (
-            <>
-              <GripVertical className="h-4 w-4 mr-1" />
-              Custom Order
-            </>
+            <GripVertical className="h-4 w-4 mr-1" />
           )}
+          {sortMode === "name" ? "Name" : sortMode === "weight" ? "Weight" : "Custom"}
         </Button>
       </div>
 
@@ -325,39 +341,31 @@ export function AdvancedEditor({
           </Droppable>
         </DragDropContext>
       </div>
-      {/* Add this at the end of the component, before the closing tag */}
+      
       <Dialog open={colorDialogOpen} onOpenChange={setColorDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Choose Color</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="color-picker">Color</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="color-picker"
-                  type="color"
-                  value={currentColor}
-                  onChange={(e) => setCurrentColor(e.target.value)}
-                  className="w-full h-24"
-                />
-              </div>
-              <div className="flex justify-between mt-4">
-                <Button variant="outline" onClick={() => setColorDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (editingOptionId) {
-                      updateOption(editingOptionId, { color: currentColor })
-                    }
-                    setColorDialogOpen(false)
-                  }}
-                >
-                  Apply
-                </Button>
-              </div>
+            <ColorPicker 
+              color={currentColor} 
+              onChange={setCurrentColor} 
+            />
+            <div className="flex justify-between mt-4">
+              <Button variant="outline" onClick={() => setColorDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (editingOptionId) {
+                    updateOption(editingOptionId, { color: currentColor })
+                  }
+                  setColorDialogOpen(false)
+                }}
+              >
+                Apply
+              </Button>
             </div>
           </div>
         </DialogContent>

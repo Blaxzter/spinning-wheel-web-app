@@ -1,3 +1,5 @@
+import { ColorPalette } from "./utils"
+
 export interface WheelOption {
   id: string
   text: string
@@ -6,10 +8,12 @@ export interface WheelOption {
   weight: number
   image: string | null
   imageMode: "center" | "fill"
+  colorSetByUser?: boolean
 }
 
 export interface WheelData {
   name: string
   options: WheelOption[]
   lastModified: string
+  colorPalette?: ColorPalette
 }

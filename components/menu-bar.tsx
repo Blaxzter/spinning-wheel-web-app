@@ -4,7 +4,7 @@ import { useState } from "react"
 import type { WheelData } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Save, FileUp, Download, Plus, Share2, Database } from "lucide-react"
+import { Save, FileUp, Download, Plus, Share2, Database, Palette } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ColorPalette } from "@/lib/utils"
 
 interface MenuBarProps {
   wheelName: string
@@ -22,6 +23,9 @@ interface MenuBarProps {
   loadWheel: (wheelData: WheelData) => void
   getAllSavedWheels: () => { name: string; data: WheelData }[]
   handleNewWheel: () => void
+  colorPalette: ColorPalette
+  setColorPalette: (palette: ColorPalette) => void
+  regenerateColors: () => void
 }
 
 export function MenuBar({
@@ -31,6 +35,9 @@ export function MenuBar({
   loadWheel,
   getAllSavedWheels,
   handleNewWheel,
+  colorPalette,
+  setColorPalette,
+  regenerateColors,
 }: MenuBarProps) {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
   const [isLoadDialogOpen, setIsLoadDialogOpen] = useState(false)
@@ -93,6 +100,15 @@ export function MenuBar({
     navigator.clipboard.writeText(shareUrl)
   }
 
+  // Color palette display names
+  const paletteNames: Record<ColorPalette, string> = {
+    default: "Default",
+    pastel: "Pastel",
+    vibrant: "Vibrant",
+    muted: "Muted",
+    dark: "Dark",
+  }
+
   return (
     <div className="flex items-center justify-between p-4 border-b">
       <div className="flex items-center gap-4">
@@ -132,6 +148,32 @@ export function MenuBar({
               </DropdownMenuItem>
             ))}
             {getAllSavedWheels().length === 0 && <DropdownMenuItem disabled>No saved wheels</DropdownMenuItem>}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Palette className="h-4 w-4 mr-1" />
+              Colors: {paletteNames[colorPalette]}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Color Palette</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {Object.entries(paletteNames).map(([value, name]) => (
+              <DropdownMenuItem 
+                key={value} 
+                onClick={() => setColorPalette(value as ColorPalette)}
+                className={colorPalette === value ? "bg-accent" : ""}
+              >
+                {name}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={regenerateColors}>
+              Regenerate Colors
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 

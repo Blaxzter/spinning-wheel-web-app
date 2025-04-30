@@ -5,10 +5,34 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function generateRandomColor(): string {
+export type ColorPalette = "default" | "pastel" | "vibrant" | "muted" | "dark"
+
+export function generateRandomColor(palette: ColorPalette = "default"): string {
   const hue = Math.floor(Math.random() * 360)
-  const saturation = 70 + Math.floor(Math.random() * 30)
-  const lightness = 45 + Math.floor(Math.random() * 10)
+  let saturation: number
+  let lightness: number
+
+  switch (palette) {
+    case "pastel":
+      saturation = 55 + Math.floor(Math.random() * 15) // 55-70%
+      lightness = 70 + Math.floor(Math.random() * 10)  // 70-80%
+      break
+    case "vibrant":
+      saturation = 80 + Math.floor(Math.random() * 20) // 80-100%
+      lightness = 50 + Math.floor(Math.random() * 10)  // 50-60%
+      break
+    case "muted":
+      saturation = 30 + Math.floor(Math.random() * 20) // 30-50%
+      lightness = 40 + Math.floor(Math.random() * 20)  // 40-60%
+      break
+    case "dark":
+      saturation = 60 + Math.floor(Math.random() * 30) // 60-90%
+      lightness = 15 + Math.floor(Math.random() * 20)  // 15-35%
+      break
+    default:
+      saturation = 70 + Math.floor(Math.random() * 30) // 70-100%
+      lightness = 45 + Math.floor(Math.random() * 10)  // 45-55%
+  }
 
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`
 }

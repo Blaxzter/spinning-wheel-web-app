@@ -12,6 +12,7 @@ interface WheelProps {
   currentRotation: number
   onRotationChange: (rotation: number) => void
   onAnimationComplete: () => void
+  registerGetOptionAtPointer?: (getOptionAtPointerFn: () => WheelOption | null) => void
 }
 
 export function Wheel({
@@ -23,11 +24,12 @@ export function Wheel({
   currentRotation,
   onRotationChange,
   onAnimationComplete,
+  registerGetOptionAtPointer,
 }: WheelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [canvasSize, setCanvasSize] = useState({ width: 500, height: 500 })
-  const animationRef = useRef<number>()
-  const pointerAngle = 270 // Pointer is at the top (270 degrees)
+  const animationRef = useRef<number | undefined>(undefined)
+  const pointerAngle = 0 // Pointer is at the right (0 degrees)
   const lastFrameTimeRef = useRef<number>(0)
   const spinSpeedRef = useRef<number>(0)
   const animationCompleteRef = useRef<boolean>(false)
@@ -139,9 +141,9 @@ export function Wheel({
     // Convert current rotation to a value between 0-360
     const normalizedRotation = ((currentRotation % 360) + 360) % 360
 
-    // The pointer is at 270 degrees, so we need to find which slice is there
-    // We need to adjust by 270 degrees to align with the pointer
-    const pointerPosition = (normalizedRotation + 270) % 360
+    // The pointer is at 0 degrees, so we need to find which slice is there
+    // We need to adjust by the current rotation to find the correct slice
+    const pointerPosition = (360 - normalizedRotation) % 360
 
     // Find which slice contains this position
     let currentAngle = 0
@@ -156,6 +158,13 @@ export function Wheel({
     // Fallback to first option if something went wrong
     return options[0]
   }
+
+  // Register the getOptionAtPointer function if the prop is provided
+  useEffect(() => {
+    if (registerGetOptionAtPointer) {
+      registerGetOptionAtPointer(getOptionAtPointer);
+    }
+  }, [registerGetOptionAtPointer, options, currentRotation]);
 
   // Draw the wheel - extracted to a function for reuse
   const drawWheel = (ctx: CanvasRenderingContext2D) => {
@@ -326,14 +335,14 @@ export function Wheel({
     ctx.strokeStyle = "#333333"
     ctx.stroke()
 
-    // Draw pointer at the top (270 degrees)
-    const pointerX = centerX
-    const pointerY = centerY - radius - 5
+    // Draw pointer at the right (0 degrees)
+    const pointerX = centerX + radius + 5
+    const pointerY = centerY
 
     ctx.beginPath()
     ctx.moveTo(pointerX, pointerY)
-    ctx.lineTo(pointerX - 15, pointerY - 15)
     ctx.lineTo(pointerX + 15, pointerY - 15)
+    ctx.lineTo(pointerX + 15, pointerY + 15)
     ctx.closePath()
 
     // Highlight the pointer when a selection is made
@@ -387,24 +396,31 @@ export function Wheel({
 
   return (
     <div className="relative">
-      <canvas
-        ref={canvasRef}
-        width={canvasSize.width}
-        height={canvasSize.height}
-        onClick={onSpin}
-        className="cursor-pointer"
-      />
-      {options.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <p className="text-lg text-muted-foreground">Add options to spin the wheel</p>
-        </div>
-      )}
-      {!isSpinning && options.length > 0 && !selectedOption && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-center bg-black/50 text-white px-4 py-2 rounded-full">
-            <p>Click to spin</p>
-            <p className="text-sm">or press ctrl+enter</p>
-          </div>
+      {options.filter(opt => opt.enabled).length >= 2 ? (
+        <>
+          <canvas
+            ref={canvasRef}
+            width={canvasSize.width}
+            height={canvasSize.height}
+            onClick={onSpin}
+            className="cursor-pointer"
+          />
+          {!isSpinning && !selectedOption && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="text-center bg-black/50 text-white px-4 py-2 rounded-full">
+                <p>Click to spin</p>
+                <p className="text-sm">or press ctrl+enter</p>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="flex items-center justify-center w-full h-full">
+          <p className="text-lg text-muted-foreground">
+            {options.filter(opt => opt.enabled).length === 0 
+              ? "No options available to spin" 
+              : "At least two options are required to spin"}
+          </p>
         </div>
       )}
     </div>

@@ -82,45 +82,46 @@ export function OptionsPanel({
         </Button>
 
         <Button
-          variant={sortMode === "name" ? "default" : "outline"}
+          variant="outline"
           size="sm"
           onClick={() => {
             if (sortMode === "name") {
-              setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+              if (sortDirection === "asc") {
+                setSortDirection("desc")
+              } else {
+                setSortMode("weight")
+                setSortDirection("desc")
+              }
+            } else if (sortMode === "weight") {
+              if (sortDirection === "desc") {
+                setSortDirection("asc")
+              } else {
+                setSortMode("name")
+                setSortDirection("asc")
+              }
             } else {
               setSortMode("name")
               setSortDirection("asc")
             }
           }}
-          title="Sort by name"
+          title="Change sort order"
         >
-          {sortMode === "name" && sortDirection === "asc" ? (
-            <ArrowDownAZ className="h-4 w-4 mr-1" />
+          {sortMode === "name" ? (
+            sortDirection === "asc" ? (
+              <ArrowDownAZ className="h-4 w-4 mr-1" />
+            ) : (
+              <ArrowUpAZ className="h-4 w-4 mr-1" />
+            )
+          ) : sortMode === "weight" ? (
+            sortDirection === "asc" ? (
+              <ArrowDownWideNarrow className="h-4 w-4 mr-1" />
+            ) : (
+              <ArrowUpWideNarrow className="h-4 w-4 mr-1" />
+            )
           ) : (
-            <ArrowUpAZ className="h-4 w-4 mr-1" />
+            <GripVertical className="h-4 w-4 mr-1" />
           )}
-          Name
-        </Button>
-
-        <Button
-          variant={sortMode === "weight" ? "default" : "outline"}
-          size="sm"
-          onClick={() => {
-            if (sortMode === "weight") {
-              setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-            } else {
-              setSortMode("weight")
-              setSortDirection("desc")
-            }
-          }}
-          title="Sort by weight"
-        >
-          {sortMode === "weight" && sortDirection === "asc" ? (
-            <ArrowDownWideNarrow className="h-4 w-4 mr-1" />
-          ) : (
-            <ArrowUpWideNarrow className="h-4 w-4 mr-1" />
-          )}
-          Weight
+          {sortMode === "name" ? "Name" : sortMode === "weight" ? "Weight" : "Custom"}
         </Button>
       </div>
 
