@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build && (if exist build\\cache rmdir /s /q build\\cache)",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
