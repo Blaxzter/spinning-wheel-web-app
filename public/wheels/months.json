@@ -1,0 +1,144 @@
+{
+  "name": "Months of the Year",
+  "options": [
+    {
+      "id": "1",
+      "text": "January",
+      "color": "#3498DB",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "2",
+      "text": "February",
+      "color": "#9B59B6",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "3",
+      "text": "March",
+      "color": "#2ECC71",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "4",
+      "text": "April",
+      "color": "#F1C40F",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "5",
+      "text": "May",
+      "color": "#E67E22",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "6",
+      "text": "June",
+      "color": "#E74C3C",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "7",
+      "text": "July",
+      "color": "#1ABC9C",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "8",
+      "text": "August",
+      "color": "#34495E",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "9",
+      "text": "September",
+      "color": "#16A085",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "10",
+      "text": "October",
+      "color": "#D35400",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "11",
+      "text": "November",
+      "color": "#7F8C8D",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "12",
+      "text": "December",
+      "color": "#8E44AD",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    }
+  ],
+  "lastModified": "2024-01-01T00:00:00.000Z",
+  "colorPalette": "default",
+  "textSettings": {
+    "textRadiusPercent": 0.7,
+    "fontSizePercent": 0.07
+  },
+  "predefined": true
+}

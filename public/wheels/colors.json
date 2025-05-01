@@ -1,0 +1,79 @@
+{
+  "id": "colors",
+  "name": "Color Wheel",
+  "options": [
+    {
+      "id": "1",
+      "text": "Red",
+      "color": "#FF0000",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "2",
+      "text": "Green",
+      "color": "#00FF00",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "3",
+      "text": "Blue",
+      "color": "#0000FF",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "4",
+      "text": "Yellow",
+      "color": "#FFFF00",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "5",
+      "text": "Purple",
+      "color": "#800080",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    },
+    {
+      "id": "6",
+      "text": "Orange",
+      "color": "#FFA500",
+      "enabled": true,
+      "weight": 1,
+      "image": null,
+      "imageMode": "center",
+      "hideTextWithImage": false,
+      "colorSetByUser": true
+    }
+  ],
+  "lastModified": "2024-01-01T00:00:00.000Z",
+  "colorPalette": "default",
+  "textSettings": {
+    "textRadiusPercent": 0.7,
+    "fontSizePercent": 0.07
+  },
+  "predefined": true
+}

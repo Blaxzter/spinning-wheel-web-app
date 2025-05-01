@@ -1,27 +1,32 @@
-"use client"
-import { useState } from "react"
-import type { WheelOption } from "@/lib/types"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Eye, EyeOff, X, Plus } from "lucide-react"
+"use client";
+import { useState } from "react";
+import type { WheelOption } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, X, Plus } from "lucide-react";
 
 interface SimpleEditorProps {
-  options: WheelOption[]
-  handleBulkCreate: (text: string) => void
-  updateOption: (id: string, updates: Partial<WheelOption>) => void
-  deleteOption: (id: string) => void
+  options: WheelOption[];
+  handleBulkCreate: (text: string) => void;
+  updateOption: (id: string, updates: Partial<WheelOption>) => void;
+  deleteOption: (id: string) => void;
 }
 
-export function SimpleEditor({ options, handleBulkCreate, updateOption, deleteOption }: SimpleEditorProps) {
-  const [newOptionText, setNewOptionText] = useState("")
+export function SimpleEditor({
+  options,
+  handleBulkCreate,
+  updateOption,
+  deleteOption,
+}: SimpleEditorProps) {
+  const [newOptionText, setNewOptionText] = useState("");
 
   const handleAddOption = () => {
     if (newOptionText.trim()) {
-      handleBulkCreate(newOptionText.trim())
-      setNewOptionText("")
+      handleBulkCreate(newOptionText.trim());
+      setNewOptionText("");
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
@@ -52,12 +57,17 @@ export function SimpleEditor({ options, handleBulkCreate, updateOption, deleteOp
           ) : (
             <ul className="divide-y">
               {options.map((option) => (
-                <li key={option.id} className="flex items-center gap-2 p-2 hover:bg-muted/50">
+                <li
+                  key={option.id}
+                  className="flex items-center gap-2 p-2 hover:bg-muted/50"
+                >
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
-                    onClick={() => updateOption(option.id, { enabled: !option.enabled })}
+                    onClick={() =>
+                      updateOption(option.id, { enabled: !option.enabled })
+                    }
                     title={option.enabled ? "Disable option" : "Enable option"}
                   >
                     {option.enabled ? (
@@ -65,21 +75,36 @@ export function SimpleEditor({ options, handleBulkCreate, updateOption, deleteOp
                     ) : (
                       <EyeOff className="h-4 w-4 text-muted-foreground" />
                     )}
-                    <span className="sr-only">{option.enabled ? "Disable" : "Enable"} option</span>
+                    <span className="sr-only">
+                      {option.enabled ? "Disable" : "Enable"} option
+                    </span>
                   </Button>
 
                   <Input
                     value={option.text}
-                    onChange={(e) => updateOption(option.id, { text: e.target.value })}
+                    onChange={(e) =>
+                      updateOption(option.id, { text: e.target.value })
+                    }
                     className="h-8 flex-1"
                   />
 
                   {option.image ? (
-                    <div className="w-8 h-8 rounded-sm overflow-hidden flex-shrink-0" title="Option image">
-                      <img src={option.image} alt="" className="w-full h-full object-cover" />
+                    <div
+                      className="w-8 h-8 rounded-sm overflow-hidden flex-shrink-0"
+                      title="Option image"
+                    >
+                      <img
+                        src={option.image}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   ) : (
-                    <div className="w-8 h-8 rounded-sm flex-shrink-0" style={{ backgroundColor: option.color }} title="Option color" />
+                    <div
+                      className="w-8 h-8 rounded-sm flex-shrink-0"
+                      style={{ backgroundColor: option.color }}
+                      title="Option color"
+                    />
                   )}
 
                   <Button
@@ -100,8 +125,11 @@ export function SimpleEditor({ options, handleBulkCreate, updateOption, deleteOp
       </div>
 
       <div className="text-sm text-muted-foreground">
-        <p>Switch to Advanced Mode for more customization options like colors, weights, and images.</p>
+        <p>
+          Switch to Advanced Mode for more customization options like colors,
+          weights, and images.
+        </p>
       </div>
     </div>
-  )
+  );
 }

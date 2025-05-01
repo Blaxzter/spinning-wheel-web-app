@@ -1,0 +1,38 @@
+{
+  "wheels": [
+    {
+      "id": "cs2",
+      "name": "Cs2 Maps",
+      "filename": "cs2-wheel.json",
+      "previewOptions": [
+        "Anubis",
+        "Vertigo",
+        "Overpass",
+        "Train",
+        "Nuke",
+        "Mirage",
+        "Acient",
+        "Inferno",
+        "Dust 2"
+      ]
+    },
+    {
+      "id": "colors",
+      "name": "Color Wheel",
+      "filename": "colors.json",
+      "previewOptions": ["Red", "Green", "Blue"]
+    },
+    {
+      "id": "decisions",
+      "name": "Decision Maker",
+      "filename": "decisions.json",
+      "previewOptions": ["Yes", "No", "Maybe"]
+    },
+    {
+      "id": "months",
+      "name": "Months of the Year",
+      "filename": "months.json",
+      "previewOptions": ["January", "February", "March"]
+    }
+  ]
+}

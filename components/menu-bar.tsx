@@ -1,11 +1,27 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import type { WheelData, WheelOption } from "@/lib/types"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Save, FileUp, Download, Plus, Share2, Database, Palette, Menu, X } from "lucide-react"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useState, useEffect } from "react";
+import type { WheelData, WheelOption } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Save,
+  FileUp,
+  Download,
+  Plus,
+  Share2,
+  Database,
+  Palette,
+  Menu,
+  X,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,25 +29,26 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { ColorPalette } from "@/lib/utils"
-import { LoadWheelDialog } from "@/components/load-wheel-dialog"
+} from "@/components/ui/dropdown-menu";
+import { ColorPalette } from "@/lib/utils";
+import { LoadWheelDialog } from "@/components/load-wheel-dialog";
 
 interface MenuBarProps {
-  wheelName: string
-  setWheelName: (name: string) => void
-  saveWheel: () => void
-  loadWheel: (wheelData: WheelData) => void
-  getAllSavedWheels: () => { name: string; data: WheelData }[]
-  deleteWheel: (wheelName: string) => void
-  renameWheel: (oldName: string, newName: string) => void
-  handleNewWheel: () => void
-  colorPalette: ColorPalette
-  setColorPalette: (palette: ColorPalette) => void
-  regenerateColors: () => void
-  isWheelLoaded: boolean
-  originalWheelName: string
-  options: WheelOption[]
+  wheelName: string;
+  setWheelName: (name: string) => void;
+  saveWheel: () => void;
+  loadWheel: (wheelData: WheelData) => void;
+  getAllSavedWheels: () => { name: string; data: WheelData }[];
+  deleteWheel: (wheelName: string) => void;
+  renameWheel: (oldName: string, newName: string) => void;
+  handleNewWheel: () => void;
+  colorPalette: ColorPalette;
+  setColorPalette: (palette: ColorPalette) => void;
+  regenerateColors: () => void;
+  isWheelLoaded: boolean;
+  originalWheelName: string;
+  options: WheelOption[];
+  textSettings: { textRadiusPercent: number; fontSizePercent: number };
 }
 
 export function MenuBar({
@@ -49,80 +66,87 @@ export function MenuBar({
   isWheelLoaded,
   originalWheelName,
   options,
+  textSettings,
 }: MenuBarProps) {
-  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
-  const [isLoadDialogOpen, setIsLoadDialogOpen] = useState(false)
-  const [shareUrl, setShareUrl] = useState("")
-  const [savedWheels, setSavedWheels] = useState<{ name: string; data: WheelData }[]>([])
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isLoadDialogOpen, setIsLoadDialogOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
+  const [savedWheels, setSavedWheels] = useState<
+    { name: string; data: WheelData }[]
+  >([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   // Refresh the saved wheels list when the dialog opens or wheels are modified
   useEffect(() => {
     if (isLoadDialogOpen) {
       setSavedWheels(getAllSavedWheels());
     }
   }, [isLoadDialogOpen, getAllSavedWheels]);
-  
+
   // Handlers for wheel operations that refresh the list
   const handleDeleteWheel = (wheelName: string) => {
     deleteWheel(wheelName);
     setSavedWheels(getAllSavedWheels());
   };
-  
+
   const handleRenameWheel = (oldName: string, newName: string) => {
     renameWheel(oldName, newName);
     setSavedWheels(getAllSavedWheels());
   };
 
   const handleSave = () => {
-    saveWheel()
-  }
+    saveWheel();
+  };
 
   const handleExport = () => {
     const wheelData: WheelData = {
       name: wheelName,
       options: options,
       lastModified: new Date().toISOString(),
-      colorPalette: colorPalette
-    }
+      colorPalette: colorPalette,
+      textSettings: textSettings,
+    };
 
-    const dataStr = JSON.stringify(wheelData)
-    const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr)
+    const dataStr = JSON.stringify(wheelData);
+    const dataUri =
+      "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
 
-    const exportFileDefaultName = `${wheelName.replace(/\s+/g, "-").toLowerCase()}.json`
+    const exportFileDefaultName = `${wheelName
+      .replace(/\s+/g, "-")
+      .toLowerCase()}.json`;
 
-    const linkElement = document.createElement("a")
-    linkElement.setAttribute("href", dataUri)
-    linkElement.setAttribute("download", exportFileDefaultName)
-    linkElement.click()
-  }
+    const linkElement = document.createElement("a");
+    linkElement.setAttribute("href", dataUri);
+    linkElement.setAttribute("download", exportFileDefaultName);
+    linkElement.click();
+  };
 
   const handleImport = () => {
-    const input = document.createElement("input")
-    input.type = "file"
-    input.accept = ".json"
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
     input.onchange = (e: any) => {
-      const file = e.target.files[0]
-      if (!file) return
+      const file = e.target.files[0];
+      if (!file) return;
 
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const wheelData = JSON.parse(e.target?.result as string) as WheelData
-          loadWheel(wheelData)
+          const wheelData = JSON.parse(e.target?.result as string) as WheelData;
+          loadWheel(wheelData);
         } catch (error) {
-          console.error("Error parsing wheel data:", error)
-          alert("Invalid wheel data file")
+          console.error("Error parsing wheel data:", error);
+          alert("Invalid wheel data file");
         }
-      }
-      reader.readAsText(file)
-    }
-    input.click()
-  }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
 
   const handleCopyShareUrl = () => {
-    navigator.clipboard.writeText(shareUrl)
-  }
+    navigator.clipboard.writeText(shareUrl);
+  };
 
   // Color palette display names
   const paletteNames: Record<ColorPalette, string> = {
@@ -131,7 +155,7 @@ export function MenuBar({
     vibrant: "Vibrant",
     muted: "Muted",
     dark: "Dark",
-  }
+  };
 
   return (
     <div className="border-b">
@@ -158,7 +182,11 @@ export function MenuBar({
             Save
           </Button>
 
-          <Button variant="outline" size="sm" onClick={() => setIsLoadDialogOpen(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsLoadDialogOpen(true)}
+          >
             <Database className="h-4 w-4 mr-1" />
             Load
           </Button>
@@ -174,8 +202,8 @@ export function MenuBar({
               <DropdownMenuLabel>Color Palette</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {Object.entries(paletteNames).map(([value, name]) => (
-                <DropdownMenuItem 
-                  key={value} 
+                <DropdownMenuItem
+                  key={value}
                   onClick={() => setColorPalette(value as ColorPalette)}
                   className={colorPalette === value ? "bg-accent" : ""}
                 >
@@ -213,67 +241,101 @@ export function MenuBar({
               placeholder="Wheel Name"
             />
           </div>
-          
+
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="sm" onClick={handleNewWheel} className="px-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNewWheel}
+              className="px-2"
+            >
               <Plus className="h-4 w-4" />
             </Button>
 
-            <Button variant="outline" size="sm" onClick={handleSave} className="px-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSave}
+              className="px-2"
+            >
               <Save className="h-4 w-4" />
             </Button>
 
-            <Button variant="outline" size="sm" onClick={() => setIsLoadDialogOpen(true)} className="px-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsLoadDialogOpen(true)}
+              className="px-2"
+            >
               <Database className="h-4 w-4" />
             </Button>
 
             <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="px-2">
-                <Palette className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Color Palette: {paletteNames[colorPalette]}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {Object.entries(paletteNames).map(([value, name]) => (
-                <DropdownMenuItem 
-                  key={value} 
-                  onClick={() => setColorPalette(value as ColorPalette)}
-                  className={colorPalette === value ? "bg-accent" : ""}
-                >
-                  {name}
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="px-2">
+                  <Palette className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>
+                  Color Palette: {paletteNames[colorPalette]}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {Object.entries(paletteNames).map(([value, name]) => (
+                  <DropdownMenuItem
+                    key={value}
+                    onClick={() => setColorPalette(value as ColorPalette)}
+                    className={colorPalette === value ? "bg-accent" : ""}
+                  >
+                    {name}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={regenerateColors}>
+                  Regenerate Colors
                 </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={regenerateColors}>
-                Regenerate Colors
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          <Button variant="outline" size="sm" onClick={handleExport} className="px-2">
-            <Download className="h-4 w-4" />
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExport}
+              className="px-2"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
 
-          <Button variant="outline" size="sm" onClick={handleImport} className="px-2">
-            <FileUp className="h-4 w-4" />
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleImport}
+              className="px-2"
+            >
+              <FileUp className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-        
       </div>
 
       {/* Mobile menu */}
       <div className="md:hidden">
         <div className="flex items-center justify-between p-4">
           <h1 className="text-xl font-bold">Spinning Wheel</h1>
-          
-          <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </Button>
         </div>
-        
+
         {mobileMenuOpen && (
           <div className="absolute left-0 right-0 z-50 px-4 py-4 bg-background border-b shadow-md">
             <Input
@@ -282,7 +344,7 @@ export function MenuBar({
               className="w-full mb-2"
               placeholder="Wheel Name"
             />
-              
+
             <div className="grid grid-cols-2 gap-2">
               <Button variant="outline" size="sm" onClick={handleNewWheel}>
                 <Plus className="h-4 w-4 mr-1" />
@@ -294,7 +356,11 @@ export function MenuBar({
                 Save
               </Button>
 
-              <Button variant="outline" size="sm" onClick={() => setIsLoadDialogOpen(true)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsLoadDialogOpen(true)}
+              >
                 <Database className="h-4 w-4 mr-1" />
                 Load
               </Button>
@@ -310,8 +376,8 @@ export function MenuBar({
                   <DropdownMenuLabel>Color Palette</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {Object.entries(paletteNames).map(([value, name]) => (
-                    <DropdownMenuItem 
-                      key={value} 
+                    <DropdownMenuItem
+                      key={value}
                       onClick={() => setColorPalette(value as ColorPalette)}
                       className={colorPalette === value ? "bg-accent" : ""}
                     >
@@ -352,7 +418,9 @@ export function MenuBar({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Share Wheel</DialogTitle>
-            <DialogDescription>Share this link with others to let them use your wheel</DialogDescription>
+            <DialogDescription>
+              Share this link with others to let them use your wheel
+            </DialogDescription>
           </DialogHeader>
           <div className="flex gap-2 mt-4">
             <Input value={shareUrl} readOnly />
@@ -361,5 +429,5 @@ export function MenuBar({
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
