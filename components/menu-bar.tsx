@@ -162,7 +162,14 @@ export function MenuBar({
       {/* Desktop menu (large screens) */}
       <div className="hidden lg:flex items-center justify-between p-4">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold">Spinning Wheel</h1>
+          <div className="flex items-center">
+            <img
+              src="/logo.svg"
+              alt="Spinning Wheel Logo"
+              className="w-8 h-8 mr-2"
+            />
+            <h1 className="text-xl font-bold">Spinning Wheel</h1>
+          </div>
           <Input
             value={wheelName}
             onChange={(e) => setWheelName(e.target.value)}
@@ -233,7 +240,14 @@ export function MenuBar({
       <div className="hidden md:flex lg:hidden flex-col p-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold">Spinning Wheel</h1>
+            <div className="flex items-center">
+              <img
+                src="/logo.svg"
+                alt="Spinning Wheel Logo"
+                className="w-7 h-7 mr-2"
+              />
+              <h1 className="text-xl font-bold">Spinning Wheel</h1>
+            </div>
             <Input
               value={wheelName}
               onChange={(e) => setWheelName(e.target.value)}
@@ -321,7 +335,14 @@ export function MenuBar({
       {/* Mobile menu */}
       <div className="md:hidden">
         <div className="flex items-center justify-between p-4">
-          <h1 className="text-xl font-bold">Spinning Wheel</h1>
+          <div className="flex items-center">
+            <img
+              src="/logo.svg"
+              alt="Spinning Wheel Logo"
+              className="w-6 h-6 mr-2"
+            />
+            <h1 className="text-lg font-bold">Spinning Wheel</h1>
+          </div>
 
           <Button
             variant="ghost"

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Colorful spinner wheel with simpler design for favicon/logo use -->
+  
+  <!-- Main circle background -->
+  <circle cx="32" cy="32" r="30" fill="#f8f8f8" stroke="#e0e0e0" stroke-width="1" />
+  
+  <!-- Spinner sections -->
+  <g id="spinner">
+    <!-- Section 1 (red) -->
+    <path d="M 32 32 L 32 2 A 30 30 0 0 1 54.5 12.5 Z" fill="#FF5252" />
+    
+    <!-- Section 2 (orange) -->
+    <path d="M 32 32 L 54.5 12.5 A 30 30 0 0 1 62 32 Z" fill="#FF9800" />
+    
+    <!-- Section 3 (yellow) -->
+    <path d="M 32 32 L 62 32 A 30 30 0 0 1 54.5 51.5 Z" fill="#FFEB3B" />
+    
+    <!-- Section 4 (green) -->
+    <path d="M 32 32 L 54.5 51.5 A 30 30 0 0 1 32 62 Z" fill="#4CAF50" />
+    
+    <!-- Section 5 (teal) -->
+    <path d="M 32 32 L 32 62 A 30 30 0 0 1 9.5 51.5 Z" fill="#009688" />
+    
+    <!-- Section 6 (blue) -->
+    <path d="M 32 32 L 9.5 51.5 A 30 30 0 0 1 2 32 Z" fill="#2196F3" />
+    
+    <!-- Section 7 (indigo) -->
+    <path d="M 32 32 L 2 32 A 30 30 0 0 1 9.5 12.5 Z" fill="#3F51B5" />
+    
+    <!-- Section 8 (purple) -->
+    <path d="M 32 32 L 9.5 12.5 A 30 30 0 0 1 32 2 Z" fill="#9C27B0" />
+  </g>
+  
+  <!-- Center circle -->
+  <circle cx="32" cy="32" r="6" fill="white" stroke="#ddd" stroke-width="1" />
+  
+  <!-- Center dot -->
+  <circle cx="32" cy="32" r="3" fill="#333" />
+  
+  <!-- Optional animation for the web version -->
+  <style>
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    #spinner {
+      transform-origin: 32px 32px;
+      animation: spin 5s linear infinite;
+    }
+  </style>
+</svg>
