@@ -26,6 +26,10 @@ The application was built using v0 and Cursor AI, leveraging AI-assisted develop
   - Multiple color palettes
   - Customizable text size and position
   - Upload images for wheel segments
+- **Sound Effects**:
+  - Customizable tick sounds when transitioning between options
+  - Volume control for sound effects
+  - Option to enable/disable sounds
 - **Saving and Sharing**:
   - Save wheels to local storage
   - Share wheels via unique URLs

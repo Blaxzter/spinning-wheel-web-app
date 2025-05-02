@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { WheelOption } from "@/lib/types";
+import { useSound } from "@/contexts/SoundContext";
 
 interface WheelProps {
   options: WheelOption[];
@@ -41,6 +42,28 @@ export function Wheel({
   const spinSpeedRef = useRef<number>(0);
   const animationCompleteRef = useRef<boolean>(false);
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
+  const { playTick } = useSound();
+
+  // Store callback refs to avoid dependency issues
+  const onRotationChangeRef = useRef(onRotationChange);
+  const onAnimationCompleteRef = useRef(onAnimationComplete);
+  const optionsRef = useRef(options);
+  const currentRotationRef = useRef(currentRotation);
+
+  // Track the currently pointed option to detect transitions
+  const lastOptionIdRef = useRef<string | null>(null);
+
+  // Refs for animation timing
+  const lastStateUpdateTimeRef = useRef(0);
+  const STATE_UPDATE_INTERVAL = 50; // Only update state every 50ms
+
+  // Update refs when props change
+  useEffect(() => {
+    onRotationChangeRef.current = onRotationChange;
+    onAnimationCompleteRef.current = onAnimationComplete;
+    optionsRef.current = options;
+    currentRotationRef.current = currentRotation;
+  }, [onRotationChange, onAnimationComplete, options, currentRotation]);
 
   // Handle window resize
   useEffect(() => {
@@ -83,6 +106,8 @@ export function Wheel({
   useEffect(() => {
     if (isSpinning) {
       animationCompleteRef.current = false;
+      // Reset the last option ID to ensure we detect the first transition
+      lastOptionIdRef.current = null;
     }
   }, [isSpinning]);
 
@@ -92,11 +117,11 @@ export function Wheel({
       // Start animation
       const startTime = performance.now();
       const duration = 3000; // 3 seconds
-      const startRotation = currentRotation;
+      const startRotation = currentRotationRef.current;
       const rotationDiff = targetRotation - startRotation;
 
       // Set initial spin speed (degrees per second)
-      spinSpeedRef.current = (rotationDiff / 3) * 0.5; // Initial speed is higher than average
+      spinSpeedRef.current = (rotationDiff / 3) * 0.5;
 
       const animate = (time: number) => {
         const elapsed = time - startTime;
@@ -108,27 +133,57 @@ export function Wheel({
         const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
         const newRotation = startRotation + rotationDiff * easeOut(progress);
 
-        // Update the current rotation
-        onRotationChange(newRotation);
+        // Store the new rotation value in our ref
+        currentRotationRef.current = newRotation;
+
+        // Only update state periodically to avoid too many renders
+        const shouldUpdateState =
+          time - lastStateUpdateTimeRef.current >= STATE_UPDATE_INTERVAL ||
+          progress === 1;
+
+        if (shouldUpdateState) {
+          onRotationChangeRef.current(newRotation);
+          lastStateUpdateTimeRef.current = time;
+        }
 
         // Calculate instantaneous speed for visual feedback
         if (deltaTime > 0) {
           const instantSpeed =
-            ((newRotation - currentRotation) / deltaTime) * 1000; // degrees per second
+            ((newRotation - currentRotationRef.current) / deltaTime) * 1000;
           spinSpeedRef.current = instantSpeed;
+        }
+
+        // Check if the pointer is over a new option using our ref value
+        const currentOption = getOptionAtPointer();
+
+        // Play tick sound when transitioning between slices
+        if (
+          currentOption &&
+          (lastOptionIdRef.current === null ||
+            lastOptionIdRef.current !== currentOption.id)
+        ) {
+          // Play sound for each transition
+          playTick();
+
+          // Update the reference to the current option
+          lastOptionIdRef.current = currentOption.id;
         }
 
         if (progress < 1) {
           animationRef.current = requestAnimationFrame(animate);
         } else {
-          // Ensure we end exactly at the target rotation
-          onRotationChange(targetRotation);
+          // Final update - ensure we end exactly at target
+          onRotationChangeRef.current(targetRotation);
           spinSpeedRef.current = 0;
+
+          // Reset animation state
+          lastStateUpdateTimeRef.current = 0;
+          currentRotationRef.current = targetRotation;
 
           // Signal animation completion
           if (!animationCompleteRef.current) {
             animationCompleteRef.current = true;
-            onAnimationComplete();
+            onAnimationCompleteRef.current();
           }
         }
       };
@@ -139,19 +194,30 @@ export function Wheel({
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+        animationRef.current = undefined;
       }
+      // Reset animation state on cleanup
+      animationCompleteRef.current = false;
+      spinSpeedRef.current = 0;
     };
-  }, [isSpinning, targetRotation]);
+  }, [isSpinning, targetRotation, playTick]); // Minimal dependency array
 
   // Calculate which option is at the pointer position
   const getOptionAtPointer = () => {
-    if (options.length === 0) return null;
+    if (optionsRef.current.length === 0) return null;
+
+    // Filter to only enabled options
+    const enabledOptions = optionsRef.current.filter((opt) => opt.enabled);
+    if (enabledOptions.length === 0) return null;
 
     // Calculate total weight
-    const totalWeight = options.reduce((sum, opt) => sum + opt.weight, 0);
+    const totalWeight = enabledOptions.reduce(
+      (sum, opt) => sum + opt.weight,
+      0
+    );
 
     // Convert current rotation to a value between 0-360
-    const normalizedRotation = ((currentRotation % 360) + 360) % 360;
+    const normalizedRotation = ((currentRotationRef.current % 360) + 360) % 360;
 
     // The pointer is at 0 degrees, so we need to find which slice is there
     // We need to adjust by the current rotation to find the correct slice
@@ -159,7 +225,7 @@ export function Wheel({
 
     // Find which slice contains this position
     let currentAngle = 0;
-    for (const option of options) {
+    for (const option of enabledOptions) {
       const sliceAngle = (360 * option.weight) / totalWeight;
       if (
         pointerPosition >= currentAngle &&
@@ -171,7 +237,7 @@ export function Wheel({
     }
 
     // Fallback to first option if something went wrong
-    return options[0];
+    return enabledOptions[0];
   };
 
   // Register the getOptionAtPointer function if the prop is provided
@@ -179,7 +245,7 @@ export function Wheel({
     if (registerGetOptionAtPointer) {
       registerGetOptionAtPointer(getOptionAtPointer);
     }
-  }, [registerGetOptionAtPointer, options, currentRotation]);
+  }, [registerGetOptionAtPointer]); // Only depend on the registration function
 
   // Draw the wheel - extracted to a function for reuse
   const drawWheel = (ctx: CanvasRenderingContext2D) => {
@@ -200,6 +266,14 @@ export function Wheel({
     // Draw wheel segments
     const startAngle = (currentRotation * Math.PI) / 180;
     let currentAngle = startAngle;
+
+    // Disable shadow effects when spinning for better performance
+    if (isSpinning) {
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    }
 
     for (let i = 0; i < options.length; i++) {
       const option = options[i];
@@ -474,26 +548,41 @@ export function Wheel({
 
     // Add a subtle motion blur effect when spinning fast
     if (isSpinning && Math.abs(spinSpeedRef.current) > 100) {
-      const blurAmount = Math.min(10, Math.abs(spinSpeedRef.current) / 100);
-      ctx.filter = `blur(${blurAmount}px)`;
+      // Skip blur effect on lower-end devices for better performance
+      const isLowPerformanceDevice = window.navigator.hardwareConcurrency
+        ? window.navigator.hardwareConcurrency <= 4
+        : false;
 
-      // Redraw a faded version of the wheel with blur for motion effect
-      ctx.globalAlpha = 0.3;
-      ctx.drawImage(canvas, 0, 0);
+      if (!isLowPerformanceDevice) {
+        const blurAmount = Math.min(5, Math.abs(spinSpeedRef.current) / 200);
+        ctx.filter = `blur(${blurAmount}px)`;
 
-      // Reset filters
-      ctx.filter = "none";
-      ctx.globalAlpha = 1.0;
+        // Redraw a faded version of the wheel with blur for motion effect
+        ctx.globalAlpha = 0.2;
+        ctx.drawImage(canvas, 0, 0);
+
+        // Reset filters
+        ctx.filter = "none";
+        ctx.globalAlpha = 1.0;
+      }
     }
   };
 
-  // Draw the wheel
+  // Draw the wheel with optimized rendering schedule
   useEffect(() => {
     if (!canvasRef.current || options.length === 0) return;
-    const ctx = canvasRef.current.getContext("2d");
+    const ctx = canvasRef.current.getContext("2d", { alpha: true });
     if (!ctx) return;
 
+    // Only draw once when this effect runs, don't create another animation loop
     drawWheel(ctx);
+
+    // No need for animation frame here since the spinning animation
+    // is already handled by the previous useEffect
+
+    return () => {
+      // No need to cancel animation frames here
+    };
   }, [options, currentRotation, canvasSize, isSpinning, selectedOption]);
 
   // Handle keyboard shortcuts

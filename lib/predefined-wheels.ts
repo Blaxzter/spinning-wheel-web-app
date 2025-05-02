@@ -66,7 +66,6 @@ export async function loadPredefinedWheel(
  */
 export async function getWheelById(id: string): Promise<WheelData | null> {
   try {
-    console.log("Getting wheel by ID:", id);
     // First get the catalog
     const catalog = await getPredefinedWheelsCatalog();
 
@@ -74,7 +73,6 @@ export async function getWheelById(id: string): Promise<WheelData | null> {
     const wheel = catalog.find((w) => w.id.toLowerCase() === id.toLowerCase());
 
     if (!wheel) {
-      console.log("No wheel found with ID:", id);
       return null;
     }
 

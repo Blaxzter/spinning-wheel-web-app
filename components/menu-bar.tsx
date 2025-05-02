@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ColorPalette } from "@/lib/utils";
 import { LoadWheelDialog } from "@/components/load-wheel-dialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface MenuBarProps {
   wheelName: string;
@@ -179,6 +180,8 @@ export function MenuBar({
         </div>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
+
           <Button variant="outline" size="sm" onClick={handleNewWheel}>
             <Plus className="h-4 w-4 mr-1" />
             New
@@ -248,87 +251,91 @@ export function MenuBar({
               />
               <h1 className="text-xl font-bold">Spinning Wheel</h1>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Input
               value={wheelName}
               onChange={(e) => setWheelName(e.target.value)}
-              className="w-36 sm:w-48"
+              className="w-48"
               placeholder="Wheel Name"
             />
           </div>
+        </div>
 
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNewWheel}
-              className="px-2"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNewWheel}
+            className="px-2"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSave}
-              className="px-2"
-            >
-              <Save className="h-4 w-4" />
-            </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSave}
+            className="px-2"
+          >
+            <Save className="h-4 w-4" />
+          </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsLoadDialogOpen(true)}
-              className="px-2"
-            >
-              <Database className="h-4 w-4" />
-            </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsLoadDialogOpen(true)}
+            className="px-2"
+          >
+            <Database className="h-4 w-4" />
+          </Button>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="px-2">
-                  <Palette className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>
-                  Color Palette: {paletteNames[colorPalette]}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {Object.entries(paletteNames).map(([value, name]) => (
-                  <DropdownMenuItem
-                    key={value}
-                    onClick={() => setColorPalette(value as ColorPalette)}
-                    className={colorPalette === value ? "bg-accent" : ""}
-                  >
-                    {name}
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={regenerateColors}>
-                  Regenerate Colors
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="px-2">
+                <Palette className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>
+                Color Palette: {paletteNames[colorPalette]}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {Object.entries(paletteNames).map(([value, name]) => (
+                <DropdownMenuItem
+                  key={value}
+                  onClick={() => setColorPalette(value as ColorPalette)}
+                  className={colorPalette === value ? "bg-accent" : ""}
+                >
+                  {name}
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={regenerateColors}>
+                Regenerate Colors
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExport}
-              className="px-2"
-            >
-              <Download className="h-4 w-4" />
-            </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            className="px-2"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleImport}
-              className="px-2"
-            >
-              <FileUp className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleImport}
+            className="px-2"
+          >
+            <FileUp className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
@@ -344,17 +351,20 @@ export function MenuBar({
             <h1 className="text-lg font-bold">Spinning Wheel</h1>
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </Button>
+          </div>
         </div>
 
         {mobileMenuOpen && (

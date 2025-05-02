@@ -20,6 +20,7 @@ import {
   ArrowUpWideNarrow,
   Settings,
   ChevronDown,
+  Volume2,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -36,6 +37,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { SoundSettings } from "@/components/wheel/SoundSettings";
 
 interface AdvancedEditorProps {
   options: WheelOption[];
@@ -98,6 +100,7 @@ export function AdvancedEditor({
   const [editingOptionId, setEditingOptionId] = useState<string | null>(null);
   const [currentColor, setCurrentColor] = useState("#000000");
   const [textSettingsPanelOpen, setTextSettingsPanelOpen] = useState(false);
+  const [soundSettingsPanelOpen, setSoundSettingsPanelOpen] = useState(false);
 
   // Initialize color picker when dialog opens
   useEffect(() => {
@@ -228,6 +231,15 @@ export function AdvancedEditor({
         >
           <Settings className="h-4 w-4" />
         </Button>
+
+        <Button
+          variant={soundSettingsPanelOpen ? "default" : "outline"}
+          size="sm"
+          onClick={() => setSoundSettingsPanelOpen(!soundSettingsPanelOpen)}
+          title="Sound settings"
+        >
+          <Volume2 className="h-4 w-4" />
+        </Button>
       </div>
 
       <Collapsible
@@ -291,6 +303,16 @@ export function AdvancedEditor({
               </div>
             </div>
           </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      <Collapsible
+        open={soundSettingsPanelOpen}
+        onOpenChange={setSoundSettingsPanelOpen}
+        className="w-full"
+      >
+        <CollapsibleContent className="CollapsibleContent">
+          <SoundSettings />
         </CollapsibleContent>
       </Collapsible>
 

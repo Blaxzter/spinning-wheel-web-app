@@ -117,10 +117,6 @@ export function SpinningWheel() {
     // Generate distinct colors for the initial options with explicit palette
     const distinctColors = generateDistinctColors(4, currentPalette);
 
-    // Log for debugging
-    console.log("Initializing default wheel with palette:", currentPalette);
-    console.log("Generated colors:", distinctColors);
-
     setWheelName("My Wheel");
     setOptions([
       {
@@ -190,7 +186,6 @@ export function SpinningWheel() {
         );
 
         if (savedWheel) {
-          console.log("Loading wheel from localStorage:", savedWheel.data);
           loadWheel(savedWheel.data);
           initialized.current = true;
           setIsLoading(false);
@@ -210,7 +205,6 @@ export function SpinningWheel() {
               predefinedWheel.filename
             );
             if (wheelData) {
-              console.log("Loaded predefined wheel:", wheelData);
               loadWheel({ ...wheelData, slug: predefinedWheel.id });
               initialized.current = true;
               setIsLoading(false);
@@ -737,8 +731,7 @@ export function SpinningWheel() {
                   </p>
                   <div className="flex gap-2 justify-center mt-4">
                     <Button
-                      variant="outline"
-                      className="bg-white hover:bg-gray-100"
+                      variant="default"
                       onClick={() => {
                         setSelectedOption(null);
                         setTargetRotation(null);

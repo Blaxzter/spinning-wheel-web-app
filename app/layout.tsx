@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { SoundProvider } from "@/contexts/SoundContext";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "Spinning Wheel - Fabraham",
@@ -18,7 +20,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <SoundProvider>{children}</SoundProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
