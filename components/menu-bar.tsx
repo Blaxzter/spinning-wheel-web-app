@@ -33,6 +33,7 @@ import {
 import { ColorPalette } from "@/lib/utils";
 import { LoadWheelDialog } from "@/components/load-wheel-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeLogo } from "@/components/theme-logo";
 
 interface MenuBarProps {
   wheelName: string;
@@ -164,11 +165,7 @@ export function MenuBar({
       <div className="hidden lg:flex items-center justify-between p-4">
         <div className="flex items-center gap-4">
           <div className="flex items-center">
-            <img
-              src="/logo.svg"
-              alt="Spinning Wheel Logo"
-              className="w-8 h-8 mr-2"
-            />
+            <ThemeLogo className="w-8 h-8 mr-2" />
             <h1 className="text-xl font-bold">Spinning Wheel</h1>
           </div>
           <Input
@@ -244,11 +241,7 @@ export function MenuBar({
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="flex items-center">
-              <img
-                src="/logo.svg"
-                alt="Spinning Wheel Logo"
-                className="w-7 h-7 mr-2"
-              />
+              <ThemeLogo className="w-7 h-7 mr-2" />
               <h1 className="text-xl font-bold">Spinning Wheel</h1>
             </div>
           </div>
@@ -343,11 +336,7 @@ export function MenuBar({
       <div className="md:hidden">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center">
-            <img
-              src="/logo.svg"
-              alt="Spinning Wheel Logo"
-              className="w-6 h-6 mr-2"
-            />
+            <ThemeLogo className="w-6 h-6 mr-2" />
             <h1 className="text-lg font-bold">Spinning Wheel</h1>
           </div>
 
