@@ -116,7 +116,7 @@ export function Wheel({
     if (isSpinning && targetRotation !== null) {
       // Start animation
       const startTime = performance.now();
-      const duration = 3000; // 3 seconds
+      const duration = 5000; // Increased from 3000 to 5000 ms (5 seconds)
       const startRotation = currentRotationRef.current;
       const rotationDiff = targetRotation - startRotation;
 
@@ -129,8 +129,8 @@ export function Wheel({
         const deltaTime = time - (lastFrameTimeRef.current || time);
         lastFrameTimeRef.current = time;
 
-        // Easing function for natural slowdown
-        const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+        // Easing function for more gradual slowdown
+        const easeOut = (t: number) => 1 - Math.pow(1 - t, 5); // Changed from cubic to quartic easing
         const newRotation = startRotation + rotationDiff * easeOut(progress);
 
         // Store the new rotation value in our ref

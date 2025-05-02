@@ -90,6 +90,7 @@ export function SpinningWheel() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialized = useRef(false);
+  const selectedAlertRef = useRef<HTMLDivElement>(null);
 
   // Update panel state when mobile detection completes
   useEffect(() => {
@@ -642,6 +643,30 @@ export function SpinningWheel() {
     window.history.replaceState({}, document.title, window.location.pathname);
   };
 
+  // Handle clicks outside the selected alert
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        selectedOption &&
+        selectedAlertRef.current &&
+        !selectedAlertRef.current.contains(event.target as Node)
+      ) {
+        setSelectedOption(null);
+        setTargetRotation(null);
+      }
+    }
+
+    // Add event listener when alert is shown
+    if (selectedOption) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // Clean up event listener
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [selectedOption]);
+
   return (
     <div className="w-full h-screen flex flex-col overflow-hidden">
       {showConfetti && (
@@ -653,6 +678,7 @@ export function SpinningWheel() {
           gravity={0.2}
           initialVelocityY={20}
           initialVelocityX={8}
+          style={{ position: "fixed", pointerEvents: "none", zIndex: 15 }}
         />
       )}
 
@@ -712,58 +738,62 @@ export function SpinningWheel() {
               />
 
               {selectedOption && (
-                <div
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-sm p-6 rounded-lg shadow-lg z-20 text-center"
-                  style={{ border: `3px solid ${selectedOption.color}` }}
-                >
-                  <h2 className="text-2xl font-bold text-white">Selected:</h2>
-                  {selectedOption.image && (
-                    <div className="my-3 flex justify-center">
-                      <img
-                        src={selectedOption.image}
-                        alt={selectedOption.text}
-                        className="max-h-[120px] max-w-full rounded"
-                      />
+                <>
+                  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-10" />
+                  <div
+                    ref={selectedAlertRef}
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-sm p-6 rounded-lg shadow-lg z-20 text-center"
+                    style={{ border: `3px solid ${selectedOption.color}` }}
+                  >
+                    <h2 className="text-2xl font-bold text-white">Selected:</h2>
+                    {selectedOption.image && (
+                      <div className="my-3 flex justify-center">
+                        <img
+                          src={selectedOption.image}
+                          alt={selectedOption.text}
+                          className="max-h-[120px] max-w-full rounded"
+                        />
+                      </div>
+                    )}
+                    <p className="text-3xl mt-2 text-white font-bold">
+                      {selectedOption.text}
+                    </p>
+                    <div className="flex gap-2 justify-center mt-4">
+                      <Button
+                        variant="default"
+                        onClick={() => {
+                          setSelectedOption(null);
+                          setTargetRotation(null);
+                        }}
+                      >
+                        Hide
+                      </Button>
+                      <Button
+                        variant="default"
+                        onClick={() => {
+                          // Disable the winning option
+                          setOptions(
+                            options.map((opt) =>
+                              opt.id === selectedOption.id
+                                ? { ...opt, enabled: false }
+                                : opt
+                            )
+                          );
+                          setSelectedOption(null);
+                          setTargetRotation(null);
+                          setTimeout(() => spinWheel(), 100);
+                        }}
+                        disabled={
+                          options.filter((opt) => opt.enabled).length <= 2
+                        }
+                      >
+                        {options.filter((opt) => opt.enabled).length <= 2
+                          ? "Not enough options left"
+                          : "Hide Option & Spin Again"}
+                      </Button>
                     </div>
-                  )}
-                  <p className="text-3xl mt-2 text-white font-bold">
-                    {selectedOption.text}
-                  </p>
-                  <div className="flex gap-2 justify-center mt-4">
-                    <Button
-                      variant="default"
-                      onClick={() => {
-                        setSelectedOption(null);
-                        setTargetRotation(null);
-                      }}
-                    >
-                      Hide
-                    </Button>
-                    <Button
-                      variant="default"
-                      onClick={() => {
-                        // Disable the winning option
-                        setOptions(
-                          options.map((opt) =>
-                            opt.id === selectedOption.id
-                              ? { ...opt, enabled: false }
-                              : opt
-                          )
-                        );
-                        setSelectedOption(null);
-                        setTargetRotation(null);
-                        setTimeout(() => spinWheel(), 100);
-                      }}
-                      disabled={
-                        options.filter((opt) => opt.enabled).length <= 2
-                      }
-                    >
-                      {options.filter((opt) => opt.enabled).length <= 2
-                        ? "Not enough options left"
-                        : "Hide Option & Spin Again"}
-                    </Button>
                   </div>
-                </div>
+                </>
               )}
 
               <Button
