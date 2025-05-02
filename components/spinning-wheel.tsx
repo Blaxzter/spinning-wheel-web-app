@@ -33,8 +33,10 @@ import {
   getWheelById,
   type WheelCatalogItem,
 } from "@/lib/predefined-wheels";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function SpinningWheel() {
+  const isMobile = useIsMobile();
   const [wheelName, setWheelName] = useState<string>("My Wheel");
   const [options, setOptions] = useState<WheelOption[]>([]);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
@@ -42,7 +44,7 @@ export function SpinningWheel() {
     null
   );
   const [isAdvancedMode, setIsAdvancedMode] = useState<boolean>(false);
-  const [isPanelOpen, setIsPanelOpen] = useState<boolean>(true);
+  const [isPanelOpen, setIsPanelOpen] = useState<boolean>(!isMobile);
   const [sortMode, setSortMode] = useState<"name" | "weight" | "custom">(
     "custom"
   );
@@ -88,6 +90,11 @@ export function SpinningWheel() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialized = useRef(false);
+
+  // Update panel state when mobile detection completes
+  useEffect(() => {
+    setIsPanelOpen(!isMobile);
+  }, [isMobile]);
 
   // Helper function to create URL-friendly slugs
   const slugify = (text: string) => {
